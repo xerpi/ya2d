@@ -1,8 +1,4 @@
-/*
-* Copyright (C) 2013, xerpi
-*/
-
-/* ya2d sample */
+/* ya2d sample by xerpi */
 
 #include <pspkernel.h>
 #include <pspctrl.h>
@@ -34,6 +30,8 @@ int main(int argc, char* argv[])
 {
 	pspDebugScreenInit();
 	SetupCallbacks();
+	sceCtrlSetSamplingCycle(0);
+	sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
 	
 	ya2d_init();	
 	ya2d_set_clear_color(0);
@@ -43,8 +41,10 @@ int main(int argc, char* argv[])
 	if (t == NULL) goto exit;
 	
 	ya2d_swizzle_texture(t);
+	ya2d_center_texture(t);
 	
 	float angle = 0.0f;
+	float cross_x = 50, cross_y = 50;
 	SceCtrlData pad;
 	
 	while(run) {
@@ -53,11 +53,18 @@ int main(int argc, char* argv[])
 		
 		if (pad.Buttons & PSP_CTRL_RTRIGGER) angle += 0.005f;
 		else if (pad.Buttons & PSP_CTRL_LTRIGGER) angle -= 0.005f;
+	
+		if (fabs(pad.Lx-128) > 60) cross_x += (pad.Lx-128)/100.0f;
+		if (fabs(pad.Ly-128) > 60) cross_y += (pad.Ly-128)/100.0f;
+
+		ya2d_draw_rotate_texture(cross_x, cross_y, angle, t);
+		ya2d_draw_rect(cross_x-t->center_x, cross_y-t->center_y, t->width, t->height, 0xFF00FF00);
 		
-		ya2d_draw_rotate_texture(130, 130, angle, t);
-		
-		
+		ya2d_draw_line(cross_x-5, cross_y, cross_x+5, cross_y, 0xFF0000FF);
+		ya2d_draw_line(cross_x, cross_y-5, cross_x, cross_y+5, 0xFF0000FF);
+
 		tinyfont_draw_stringf(265, 10,  GU_RGBA(0,0,255,255), "FPS: %.2f  angle: %f", ya2d_get_fps(), angle);
+		tinyfont_draw_stringf(265, 20,  GU_RGBA(0,0,255,255), "x: %i   y: %i", cross_x, cross_y);
 		
 		ya2d_finish();
 		ya2d_swapbuffers();

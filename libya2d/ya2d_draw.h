@@ -16,14 +16,14 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _YA2D_H_
-#define _YA2D_H_
+#ifndef _YA2D_DRAW_H_
+#define _YA2D_DRAW_H_
 
-#include "ya2d_main.h"
-#include "ya2d_texture.h"
-#include "ya2d_image.h"
-#include "ya2d_draw.h"
-#include "ya2d_utils.h"
+void ya2d_draw_pixel(int x, int y, unsigned int color);
+void ya2d_draw_line(int x0, int y0, int x1, int y1, unsigned int color);
+
+void ya2d_draw_rect(int x, int y, int w, int h, unsigned int color);
+void ya2d_draw_fillrect(int x, int y, int w, int h, unsigned int color);
 
 
 #endif

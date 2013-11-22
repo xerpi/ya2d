@@ -1,5 +1,19 @@
-/*
-* Copyright (C) 2013, xerpi
+/*  libya2d
+	Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
+
+	This library is free software; you can redistribute it and/or
+	modify it under the terms of the GNU Lesser General Public
+	License as published by the Free Software Foundation; either
+	version 2.1 of the License, or (at your option) any later version.
+
+	This library is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+	Lesser General Public License for more details.
+
+	You should have received a copy of the GNU Lesser General Public
+	License along with this library; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "ya2d_texture.h"
@@ -24,8 +38,8 @@ ya2d_Texture *ya2d_create_texture(int width, int height, int psm, int place)
 	texture->psm    = psm;
 	texture->pow2_width  = next_pow2(width);
 	texture->pow2_height = next_pow2(height);
-	texture->center_x = width >> 1;
-	texture->center_y = height >> 1;
+	texture->center_x = 0;
+	texture->center_y = 0;
 	texture->swizzled = GU_FALSE;
 	
 	switch(psm) {
@@ -178,6 +192,12 @@ void ya2d_draw_rotate_texture(int x, int y, float angle, ya2d_Texture *texture)
 	}
 	
 	sceGumDrawArray(GU_TRIANGLE_STRIP, GU_TEXTURE_16BIT|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 4, 0, vertices);
+}
+
+void ya2d_center_texture(ya2d_Texture *texture)
+{
+	texture->center_x = texture->width  >> 1;
+	texture->center_y = texture->height >> 1;
 }
 
 void ya2d_swizzle_texture(ya2d_Texture *texture)
