@@ -1,4 +1,6 @@
-/*  libya2d
+/*  
+  
+	libya2d
 	Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
 
 	This library is free software; you can redistribute it and/or
@@ -43,9 +45,10 @@ ya2d_Texture *ya2d_create_texture(int width, int height, int psm, int place);
 void ya2d_free_texture(ya2d_Texture *texture);
 
 void ya2d_set_texture(ya2d_Texture *texture);
-void ya2d_draw_texture(int x, int y, ya2d_Texture *texture);
+void ya2d_draw_texture(int x, int y, ya2d_Texture *texture, int centered);
 void ya2d_draw_rotate_texture(int x, int y, float angle, ya2d_Texture *texture);
 void ya2d_center_texture(ya2d_Texture *texture);
+void ya2d_set_texture_center(int center_x, int center_y, ya2d_Texture *texture);
 
 void ya2d_swizzle_texture(ya2d_Texture *texture);
 

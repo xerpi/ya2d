@@ -1,4 +1,5 @@
-/*  libya2d
+/*
+	libya2d
 	Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
 
 	This library is free software; you can redistribute it and/or
@@ -34,6 +35,7 @@ int ya2d_shutdown();
 void ya2d_start();
 void ya2d_finish();
 void ya2d_swapbuffers();
+void ya2d_set_vsync(int enabled);
 
 void ya2d_set_clear_color(unsigned int color);
 void *ya2d_get_drawbuffer();

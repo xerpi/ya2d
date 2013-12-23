@@ -1,4 +1,5 @@
-/*  libya2d
+/*
+	libya2d
 	Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
 
 	This library is free software; you can redistribute it and/or

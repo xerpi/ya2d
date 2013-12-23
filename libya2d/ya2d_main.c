@@ -1,4 +1,5 @@
-/*  libya2d
+/*
+	libya2d
 	Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
 
 	This library is free software; you can redistribute it and/or
@@ -26,17 +27,18 @@
 
 
 static unsigned int __attribute__((aligned(16))) _ya2d_gu_list[YA2D_GU_LIST_SIZE];
-static int          _ya2d_current_fb   = 0;
-static void *       _ya2d_fb[2]        = {NULL, NULL};
-static void *       _ya2d_drawfbp      = NULL;
-static void *       _ya2d_zfb          = NULL;
-static unsigned int _ya2d_clear_color  = 0;
-static int          _ya2d_inited       = 0;
-static clock_t      _ya2d_before_clock = 0;
-static clock_t      _ya2d_after_clock  = 0;
-static clock_t      _ya2d_delta_clock  = 0;
-static clock_t      _ya2d_frame_count  = 0;
-static float        _ya2d_fps          = 0;
+static int          _ya2d_current_fb    = 0;
+static void *       _ya2d_fb[2]         = {NULL, NULL};
+static void *       _ya2d_drawfbp       = NULL;
+static void *       _ya2d_zfb           = NULL;
+static unsigned int _ya2d_clear_color   = 0;
+static int          _ya2d_inited        = 0;
+static clock_t      _ya2d_before_clock  = 0;
+static clock_t      _ya2d_after_clock   = 0;
+static clock_t      _ya2d_delta_clock   = 0;
+static clock_t      _ya2d_frame_count   = 0;
+static float        _ya2d_fps           = 0;
+static int          _ya2d_vsync_enabled = 0;
 
 int ya2d_init()
 {
@@ -121,7 +123,9 @@ void ya2d_finish()
 
 void ya2d_swapbuffers()
 {
-	//sceDisplayWaitVblankStart();
+    if (_ya2d_vsync_enabled) {
+        sceDisplayWaitVblankStart();
+    }
 	_ya2d_drawfbp = sceGuSwapBuffers();
 	_ya2d_after_clock = sceKernelLibcClock();
 	
@@ -135,6 +139,11 @@ void ya2d_swapbuffers()
 	}
 	
 	_ya2d_current_fb ^= 1;	
+}
+
+void ya2d_set_vsync(int enabled)
+{
+    _ya2d_vsync_enabled = enabled;
 }
 
 void ya2d_set_clear_color(unsigned int color)

@@ -1,4 +1,5 @@
-/*  libya2d
+/*
+	libya2d
 	Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
 
 	This library is free software; you can redistribute it and/or
@@ -85,26 +86,34 @@ void ya2d_set_texture(ya2d_Texture *texture)
 			  texture->pow2_width, texture->data);	
 }
 
-static void _ya2d_draw_texture_slow(int x, int y, ya2d_Texture *texture)
+static void _ya2d_draw_texture_slow(int x, int y, ya2d_Texture *texture, int centered)
 {	
 	ya2d_Tex2SVertex3S *vertices = sceGuGetMemory(2 * sizeof(ya2d_Tex2SVertex3S));
 	
 	vertices[0].u = 0;
 	vertices[0].v = 0;
-	vertices[0].x = x;
-	vertices[0].y = y;
 	vertices[0].z = 0;
 	
 	vertices[1].u = texture->pow2_width;
 	vertices[1].v = texture->pow2_height;
-	vertices[1].x = x + texture->pow2_width;
-	vertices[1].y = y + texture->pow2_height;
 	vertices[1].z = 0;
+    
+    if (centered) {
+        vertices[0].x = x - texture->center_x;
+        vertices[0].y = y - texture->center_y;
+        vertices[1].x = x + (texture->pow2_width  - texture->center_x);
+        vertices[1].y = y + (texture->pow2_height - texture->center_y);
+    } else {
+        vertices[0].x = x;
+        vertices[0].y = y;
+        vertices[1].x = x + texture->pow2_width;
+        vertices[1].y = y + texture->pow2_height;
+    }
 	
 	sceGumDrawArray(GU_SPRITES, GU_TEXTURE_16BIT|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 2, 0, vertices);
 }
 
-static void _ya2d_draw_texture_fast(int x, int y, ya2d_Texture *texture)
+static void _ya2d_draw_texture_fast(int x, int y, ya2d_Texture *texture, int centered)
 {	
 	int i, k, slice, n_slices = texture->width/YA2D_TEXTURE_SLICE;
 	if (texture->width%YA2D_TEXTURE_SLICE != 0) ++n_slices;
@@ -123,10 +132,20 @@ static void _ya2d_draw_texture_fast(int x, int y, ya2d_Texture *texture)
 		vertices[j].y = y + texture->height;
 		vertices[j].z = 0;
 	}
+    
+    if (centered) {
+        for (i = 0; i < n_slices; ++i) {
+            vertices[i].x -= texture->center_x;
+            vertices[i].y -= texture->center_y;
+            vertices[n_slices+i].x -= texture->center_x;
+            vertices[n_slices+i].y -= texture->center_y;  
+        }
+    }
+    
 	sceGumDrawArray(GU_SPRITES, GU_TEXTURE_16BIT|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 2*n_slices, 0, vertices);
 }
 
-void ya2d_draw_texture(int x, int y, ya2d_Texture *texture)
+void ya2d_draw_texture(int x, int y, ya2d_Texture *texture, int centered)
 {
 	sceGuEnable(GU_TEXTURE_2D);
 	sceGuTexMode(texture->psm, 0, 0, texture->swizzled);
@@ -136,9 +155,9 @@ void ya2d_draw_texture(int x, int y, ya2d_Texture *texture)
 	
 	//There's no need to use the fast algorithm with small textures
 	if (texture->pow2_width > YA2D_TEXTURE_SLICE) {
-		_ya2d_draw_texture_fast(x, y, texture);
+		_ya2d_draw_texture_fast(x, y, texture, centered);
 	} else {
-		_ya2d_draw_texture_slow(x, y, texture);
+		_ya2d_draw_texture_slow(x, y, texture, centered);
 	}	
 }
 
@@ -177,18 +196,14 @@ void ya2d_draw_rotate_texture(int x, int y, float angle, ya2d_Texture *texture)
 	vertices[3].y = vertices[2].y;
 	vertices[3].z = 0;
 	
-	float c = cosf(angle);
-	float s = sinf(angle);
+	float c = vfpu_cosf(angle);
+	float s = vfpu_sinf(angle);
 	int i;	
-	for (i = 0; i < 4; ++i) {  //Rotate
-		int x = vertices[i].x;
-		int y = vertices[i].y;
-		vertices[i].x = x*c - y*s;
-		vertices[i].y = x*s + y*c;
-	}
-	for (i = 0; i < 4; ++i) {  //Translate
-		vertices[i].x += x;
-		vertices[i].y += y;
+	for (i = 0; i < 4; ++i) {  //Rotate and translate
+		int _x = vertices[i].x;
+		int _y = vertices[i].y;
+		vertices[i].x = _x*c - _y*s + x;
+		vertices[i].y = _x*s + _y*c + y;
 	}
 	
 	sceGumDrawArray(GU_TRIANGLE_STRIP, GU_TEXTURE_16BIT|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 4, 0, vertices);
@@ -198,6 +213,12 @@ void ya2d_center_texture(ya2d_Texture *texture)
 {
 	texture->center_x = texture->width  >> 1;
 	texture->center_y = texture->height >> 1;
+}
+
+void ya2d_set_texture_center(int center_x, int center_y, ya2d_Texture *texture)
+{
+	texture->center_x = center_x;
+	texture->center_y = center_y;
 }
 
 void ya2d_swizzle_texture(ya2d_Texture *texture)

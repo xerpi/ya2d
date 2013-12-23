@@ -19,7 +19,7 @@ extern unsigned char test3_jpg_start[];
 extern unsigned int  test3_jpg_size;
 
 PSP_MODULE_INFO("ya2d Sample", 0, 1, 1);
-PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER);
+PSP_MAIN_THREAD_ATTR(THREAD_ATTR_USER | THREAD_ATTR_VFPU);
 
 int run = 1;
 int exit_callback(int arg1, int arg2, void *common);
@@ -45,7 +45,8 @@ int main(int argc, char* argv[])
 	
 	float angle = 0.0f;
 	float cross_x = 50, cross_y = 50;
-	SceCtrlData pad;
+	SceCtrlData pad, old_pad; old_pad.Buttons = 0;
+    int centered = 0, rotate = 0, vsync = 0;
 	
 	while(run) {
 		sceCtrlPeekBufferPositive(&pad, 1);
@@ -53,21 +54,33 @@ int main(int argc, char* argv[])
 		
 		if (pad.Buttons & PSP_CTRL_RTRIGGER) angle += 0.005f;
 		else if (pad.Buttons & PSP_CTRL_LTRIGGER) angle -= 0.005f;
+        
+        if (pad.Buttons & PSP_CTRL_CROSS & ~old_pad.Buttons) centered = !centered;
+        if (pad.Buttons & PSP_CTRL_TRIANGLE & ~old_pad.Buttons) rotate = !rotate;
+        if (pad.Buttons & PSP_CTRL_SQUARE & ~old_pad.Buttons) ya2d_set_vsync(vsync = !vsync);
 	
 		if (fabs(pad.Lx-128) > 60) cross_x += (pad.Lx-128)/100.0f;
 		if (fabs(pad.Ly-128) > 60) cross_y += (pad.Ly-128)/100.0f;
-
-		ya2d_draw_rotate_texture(cross_x, cross_y, angle, t);
+        
+        if (rotate)
+            ya2d_draw_rotate_texture(cross_x, cross_y, angle, t);
+        else
+            ya2d_draw_texture(cross_x, cross_y, t, centered);
+            
 		ya2d_draw_rect(cross_x-t->center_x, cross_y-t->center_y, t->width, t->height, 0xFF00FF00);
 		
 		ya2d_draw_line(cross_x-5, cross_y, cross_x+5, cross_y, 0xFF0000FF);
 		ya2d_draw_line(cross_x, cross_y-5, cross_x, cross_y+5, 0xFF0000FF);
 
-		tinyfont_draw_stringf(265, 10,  GU_RGBA(0,0,255,255), "FPS: %.2f  angle: %f", ya2d_get_fps(), angle);
-		tinyfont_draw_stringf(265, 20,  GU_RGBA(0,0,255,255), "x: %i   y: %i", cross_x, cross_y);
+		tinyfont_draw_stringf(265, 10,  GU_RGBA(0,0,255,255), "FPS: %.2f  angle: %.2f", ya2d_get_fps(), angle);
+		tinyfont_draw_stringf(265, 20,  GU_RGBA(0,0,255,255), "x: %.2f   y: %.2f", cross_x, cross_y);
+        if (centered) tinyfont_draw_string(265, 30,  GU_RGBA(255,0,255,255), "centered");
+        if (rotate)   tinyfont_draw_string(265, 40,  GU_RGBA(0,255,255,255), "rotate");
+        if (vsync)    tinyfont_draw_string(265, 50,  GU_RGBA(255,0,0,255), "vsync");
 		
 		ya2d_finish();
 		ya2d_swapbuffers();
+        old_pad = pad;
 	}
 	
 	ya2d_free_texture(t);
