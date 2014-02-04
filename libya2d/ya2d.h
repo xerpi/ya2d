@@ -20,11 +20,18 @@
 #ifndef _YA2D_H_
 #define _YA2D_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ya2d_main.h"
 #include "ya2d_texture.h"
 #include "ya2d_image.h"
 #include "ya2d_draw.h"
 #include "ya2d_utils.h"
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

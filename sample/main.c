@@ -28,7 +28,6 @@ int SetupCallbacks(void);
 
 int main(int argc, char* argv[])
 {
-	pspDebugScreenInit();
 	SetupCallbacks();
 	sceCtrlSetSamplingCycle(0);
 	sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
@@ -77,6 +76,10 @@ int main(int argc, char* argv[])
         if (centered) tinyfont_draw_string(265, 30,  GU_RGBA(255,0,255,255), "centered");
         if (rotate)   tinyfont_draw_string(265, 40,  GU_RGBA(0,255,255,255), "rotate");
         if (vsync)    tinyfont_draw_string(265, 50,  GU_RGBA(255,0,0,255), "vsync");
+        tinyfont_draw_string16x16(10, 60,  GU_RGBA(35,153,45,255), "16x16 Draw test!");
+        
+        
+        tinyfont_draw_rotated_string(120, 150, GU_RGBA(255,255,0,255), angle, "Rotated text!!");
 		
 		ya2d_finish();
 		ya2d_swapbuffers();
