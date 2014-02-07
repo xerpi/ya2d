@@ -22,35 +22,17 @@
 
 #define YA2D_LOGFILE "ms0:/ya2d_log.txt"
 
-typedef struct
-{
-    float u, v;
-    short x, y, z;
-}ya2d_Tex2FVertex3S;
-
-typedef struct
-{
-    short u, v;
-    float x, y, z;
-}ya2d_Tex2SVertex3F;
-
-typedef struct
-{
-    float u, v;
-    float x, y, z;
-}ya2d_Tex2FVertex3F;
-
-typedef struct
+struct ya2d_vertex_2s3s
 {
     short u, v;
     short x, y, z;
-}ya2d_Tex2SVertex3S;
+};
 
-typedef struct
+struct ya2d_vertex_1ui3s
 {
     unsigned int color;
     short x, y, z;
-}ya2d_Col1UIVertex3S;
+};
 
 void ya2d_log(const char* s, ...);
 

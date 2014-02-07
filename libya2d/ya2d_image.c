@@ -29,6 +29,34 @@
 #include <jpeglib.h>
 
 
+#define YA2D_PNGSIGSIZE   (8)
+#define YA2D_BMPSIGNATURE (0x4D42)
+
+
+typedef struct {
+    unsigned short  bfType;
+    unsigned int    bfSize;
+    unsigned short  bfReserved1;
+    unsigned short  bfReserved2;
+    unsigned int    bfOffBits;
+}__attribute__((packed)) BITMAPFILEHEADER;
+
+
+typedef struct {
+    unsigned int    biSize;
+    unsigned int    biWidth;
+    unsigned int    biHeight;
+    unsigned short  biPlanes;
+    unsigned short  biBitCount;
+    unsigned int    biCompression;
+    unsigned int    biSizeImage;
+    unsigned int    biXPelsPerMeter;
+    unsigned int    biYPelsPerMeter;
+    unsigned int    biClrUsed;
+    unsigned int    biClrImportant;
+}__attribute__((packed)) BITMAPINFOHEADER;
+
+
 static void _ya2d_read_png_file_fn(png_structp png_ptr, png_bytep data, png_size_t length)
 {
     SceUID fd = *(SceUID*) png_get_io_ptr(png_ptr);
@@ -43,7 +71,7 @@ static void _ya2d_read_png_buffer_fn(png_structp png_ptr, png_bytep data, png_si
 }
 
 
-static ya2d_Texture* _ya2d_load_PNG_generic(void* io_ptr, png_rw_ptr read_data_fn, int place)
+static struct ya2d_texture* _ya2d_load_PNG_generic(void* io_ptr, png_rw_ptr read_data_fn, int place)
 {
     png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
                                                  NULL, NULL, NULL);
@@ -99,7 +127,7 @@ static ya2d_Texture* _ya2d_load_PNG_generic(void* io_ptr, png_rw_ptr read_data_f
     png_read_update_info(png_ptr, info_ptr);
     
     row_ptrs = (png_bytep*)malloc(sizeof(png_bytep) * height);
-    ya2d_Texture* texture = ya2d_create_texture(width, height,
+    struct ya2d_texture* texture = ya2d_create_texture(width, height,
                                                 GU_PSM_8888, place);
                                                 
     int i;
@@ -110,6 +138,7 @@ static ya2d_Texture* _ya2d_load_PNG_generic(void* io_ptr, png_rw_ptr read_data_f
     png_read_image(png_ptr, row_ptrs);
     png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)0);
     free(row_ptrs);
+    ya2d_flush_texture(texture);
     return texture;
 exit_destroy_read:
     png_destroy_read_struct(&png_ptr, (png_infopp)0, (png_infopp)0);
@@ -119,7 +148,7 @@ exit_error:
 
 
 
-ya2d_Texture* ya2d_load_PNG_file(const char* filename, int place)
+struct ya2d_texture* ya2d_load_PNG_file(const char* filename, int place)
 {
     png_byte pngsig[YA2D_PNGSIGSIZE];
     SceUID fd;
@@ -134,8 +163,7 @@ ya2d_Texture* ya2d_load_PNG_file(const char* filename, int place)
         goto exit_close;
     }
     
-    ya2d_Texture* texture = _ya2d_load_PNG_generic((void*) &fd, _ya2d_read_png_file_fn, place);
-    
+    struct ya2d_texture* texture = _ya2d_load_PNG_generic((void*) &fd, _ya2d_read_png_file_fn, place);
     sceIoClose(fd);
     return texture;
     
@@ -146,7 +174,7 @@ exit_error:
 }
 
 
-ya2d_Texture* ya2d_load_PNG_buffer(void *buffer, int place)
+struct ya2d_texture* ya2d_load_PNG_buffer(void *buffer, int place)
 {
     if(png_sig_cmp((png_byte*) buffer, 0, YA2D_PNGSIGSIZE) != 0) {
         return NULL;
@@ -156,7 +184,7 @@ ya2d_Texture* ya2d_load_PNG_buffer(void *buffer, int place)
     return _ya2d_load_PNG_generic((void*) &buffer_address, _ya2d_read_png_buffer_fn, place);    
 }
 
-static ya2d_Texture* _ya2d_load_BMP_generic(BITMAPFILEHEADER* bmp_fh,
+static struct ya2d_texture* _ya2d_load_BMP_generic(BITMAPFILEHEADER* bmp_fh,
                                             BITMAPINFOHEADER* bmp_ih,
                                             void* user_data,
                                             void (*seek_fn)(void* user_data, unsigned int offset),
@@ -166,7 +194,7 @@ static ya2d_Texture* _ya2d_load_BMP_generic(BITMAPFILEHEADER* bmp_fh,
     unsigned int row_size;
     if (bmp_ih->biBitCount == 32) {
         row_size = bmp_ih->biWidth * 4;
-    }else if (bmp_ih->biBitCount == 24) {
+    } else if (bmp_ih->biBitCount == 24) {
         row_size = bmp_ih->biWidth * 3;
     } else if (bmp_ih->biBitCount == 16) {
         row_size = bmp_ih->biWidth * 2;
@@ -178,7 +206,7 @@ static ya2d_Texture* _ya2d_load_BMP_generic(BITMAPFILEHEADER* bmp_fh,
         row_size += 4-(row_size%4);
     }
     
-    ya2d_Texture* texture = ya2d_create_texture(bmp_ih->biWidth, bmp_ih->biHeight,
+    struct ya2d_texture* texture = ya2d_create_texture(bmp_ih->biWidth, bmp_ih->biHeight,
                                                 GU_PSM_8888, place);
     
     seek_fn(user_data, bmp_fh->bfOffBits);
@@ -210,6 +238,7 @@ static ya2d_Texture* _ya2d_load_BMP_generic(BITMAPFILEHEADER* bmp_fh,
     }
     
     free(buffer);
+    ya2d_flush_texture(texture);
     return texture;
     
 exit_error:    
@@ -237,9 +266,7 @@ static void _ya2d_read_bmp_buffer_read_fn(void* user_data, void* buffer, unsigne
     *(unsigned int*)user_data += length;
 }
 
-
-
-ya2d_Texture* ya2d_load_BMP_file(const char* filename, int place)
+struct ya2d_texture* ya2d_load_BMP_file(const char* filename, int place)
 {
     SceUID fd;
     if((fd = sceIoOpen(filename, PSP_O_RDONLY, 0777)) < 0) {
@@ -255,7 +282,7 @@ ya2d_Texture* ya2d_load_BMP_file(const char* filename, int place)
     BITMAPINFOHEADER bmp_ih;
     sceIoRead(fd, (void*)&bmp_ih, sizeof(BITMAPINFOHEADER));
     
-    ya2d_Texture* texture = _ya2d_load_BMP_generic(&bmp_fh,
+    struct ya2d_texture* texture = _ya2d_load_BMP_generic(&bmp_fh,
                                                        &bmp_ih,
                                                        (void*)&fd,
                                                        _ya2d_read_bmp_file_seek_fn,
@@ -272,7 +299,7 @@ exit_error:
 }
 
 
-ya2d_Texture* ya2d_load_BMP_buffer(void* buffer, int place)
+struct ya2d_texture* ya2d_load_BMP_buffer(void* buffer, int place)
 {
     if(buffer == NULL) {
         goto exit_error;
@@ -290,7 +317,7 @@ ya2d_Texture* ya2d_load_BMP_buffer(void* buffer, int place)
     memcpy(&bmp_ih, (void*)buffer_address + sizeof(BITMAPFILEHEADER), sizeof(BITMAPINFOHEADER));
     
     
-    ya2d_Texture* texture = _ya2d_load_BMP_generic(&bmp_fh,
+    struct ya2d_texture* texture = _ya2d_load_BMP_generic(&bmp_fh,
                                                        &bmp_ih,
                                                        (void*)&buffer_address,
                                                        _ya2d_read_bmp_buffer_seek_fn,
@@ -302,7 +329,7 @@ exit_error:
     return NULL;    
 }
 
-static ya2d_Texture* _ya2d_load_JPEG_generic(struct jpeg_decompress_struct* jinfo, struct jpeg_error_mgr* jerr, int place)
+static struct ya2d_texture* _ya2d_load_JPEG_generic(struct jpeg_decompress_struct* jinfo, struct jpeg_error_mgr* jerr, int place)
 {
     int row_bytes;
     switch (jinfo->out_color_space) {
@@ -313,7 +340,7 @@ static ya2d_Texture* _ya2d_load_JPEG_generic(struct jpeg_decompress_struct* jinf
         goto exit_error;
     }
     
-    ya2d_Texture *texture = ya2d_create_texture(jinfo->image_width,
+    struct ya2d_texture *texture = ya2d_create_texture(jinfo->image_width,
                                                 jinfo->image_height,
                                                 GU_PSM_8888, place);
     JSAMPARRAY buffer = (JSAMPARRAY)malloc(sizeof(JSAMPROW));
@@ -338,14 +365,14 @@ static ya2d_Texture* _ya2d_load_JPEG_generic(struct jpeg_decompress_struct* jinf
     
     free(buffer[0]);
     free(buffer);
+    ya2d_flush_texture(texture);
     return texture;
-    
 exit_error:    
     return NULL;
 }
 
 
-ya2d_Texture* ya2d_load_JPEG_file(const char* filename, int place)
+struct ya2d_texture* ya2d_load_JPEG_file(const char* filename, int place)
 {
     FILE *fd;
     if ((fd = fopen(filename, "rb")) < 0) {
@@ -360,7 +387,7 @@ ya2d_Texture* ya2d_load_JPEG_file(const char* filename, int place)
     jpeg_stdio_src(&jinfo, fd);
     jpeg_read_header(&jinfo, 1);
     
-    ya2d_Texture* texture = _ya2d_load_JPEG_generic(&jinfo, &jerr, place);
+    struct ya2d_texture* texture = _ya2d_load_JPEG_generic(&jinfo, &jerr, place);
     
     jpeg_finish_decompress(&jinfo);
     jpeg_destroy_decompress(&jinfo);
@@ -370,7 +397,7 @@ ya2d_Texture* ya2d_load_JPEG_file(const char* filename, int place)
 }
 
 
-ya2d_Texture* ya2d_load_JPEG_buffer(void* buffer, unsigned long buffer_size, int place)
+struct ya2d_texture* ya2d_load_JPEG_buffer(void* buffer, unsigned long buffer_size, int place)
 {
     if (buffer == NULL) {
         return NULL;
@@ -383,7 +410,7 @@ ya2d_Texture* ya2d_load_JPEG_buffer(void* buffer, unsigned long buffer_size, int
     jpeg_mem_src(&jinfo, buffer, buffer_size);
     jpeg_read_header(&jinfo, 1);
     
-    ya2d_Texture* texture = _ya2d_load_JPEG_generic(&jinfo, &jerr, place);
+    struct ya2d_texture* texture = _ya2d_load_JPEG_generic(&jinfo, &jerr, place);
     
     jpeg_finish_decompress(&jinfo);
     jpeg_destroy_decompress(&jinfo);

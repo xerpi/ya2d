@@ -34,12 +34,11 @@ int main(int argc, char* argv[])
     
     ya2d_init();
     
-    ya2d_Texture *t;
+    struct ya2d_texture *t;
     t = ya2d_load_JPEG_buffer(test3_jpg_start, test3_jpg_size, YA2D_PLACE_VRAM);
     if (t == NULL) goto exit;
     
     ya2d_swizzle_texture(t);
-    ya2d_center_texture(t);
     
     float angle = 0.0f;
     float cross_x = 50, cross_y = 50;
@@ -62,11 +61,15 @@ int main(int argc, char* argv[])
         if (fabs(pad.Ly-128) > 60) cross_y += (pad.Ly-128)/100.0f;
         
         if (rotate)
-            ya2d_draw_rotate_texture(cross_x, cross_y, angle, t);
-        else
-            ya2d_draw_texture(cross_x, cross_y, t, centered);
-            
-        ya2d_draw_rect(cross_x-t->center_x, cross_y-t->center_y, t->width, t->height, 0xFF00FF00, 0);
+            ya2d_draw_texture_rotate(t, cross_x, cross_y, angle);
+        else {
+            if (centered)
+                ya2d_draw_texture_centered(t, cross_x, cross_y);
+            else
+                ya2d_draw_texture(t, cross_x, cross_y);
+        }
+
+        ya2d_draw_rect(cross_x, cross_y, t->width, t->height, 0xFF00FF00, 0);
         
         ya2d_draw_line(cross_x-5, cross_y, cross_x+5, cross_y, 0xFF0000FF);
         ya2d_draw_line(cross_x, cross_y-5, cross_x, cross_y+5, 0xFF0000FF);

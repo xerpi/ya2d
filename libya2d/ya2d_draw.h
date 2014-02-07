@@ -24,8 +24,8 @@ void ya2d_draw_pixel(int x, int y, unsigned int color);
 void ya2d_draw_line(int x0, int y0, int x1, int y1, unsigned int color);
 
 void ya2d_draw_rect(int x, int y, int w, int h, unsigned int color, int filled);
-void ya2d_draw_rect_rot(int x, int y, int w, int h, unsigned int color, int filled, float angle);
-void ya2d_draw_rect_rot_center(int x, int y, int w, int h, unsigned int color, int filled, float angle, int rot_center_x, int rot_center_y);
+void ya2d_draw_rect_rotate(int x, int y, int w, int h, unsigned int color, int filled, float angle);
+void ya2d_draw_rect_rotate_hotspot(int x, int y, int w, int h, unsigned int color, int filled, float angle, int center_x, int center_y);
 
 
 #endif

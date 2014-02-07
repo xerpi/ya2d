@@ -152,7 +152,7 @@ void ya2d_set_vsync(int enabled)
 
 void *ya2d_get_drawbuffer()
 {
-    return vrelptr(_ya2d_drawfbp);
+    return _ya2d_drawfbp;
 }
 
 float ya2d_get_fps()
