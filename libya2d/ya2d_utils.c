@@ -1,20 +1,20 @@
 /*
-	libya2d
-	Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
+    libya2d
+    Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
 
-	This library is free software; you can redistribute it and/or
-	modify it under the terms of the GNU Lesser General Public
-	License as published by the Free Software Foundation; either
-	version 2.1 of the License, or (at your option) any later version.
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
-	This library is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-	Lesser General Public License for more details.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
-	You should have received a copy of the GNU Lesser General Public
-	License along with this library; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "ya2d_utils.h"
@@ -25,28 +25,28 @@
 
 void ya2d_log(const char* s, ...)
 {
-	SceUID fd;
-	if((fd = sceIoOpen(YA2D_LOGFILE, PSP_O_WRONLY|PSP_O_APPEND|PSP_O_CREAT, 0777))) {
-		char buffer[256];
-		va_list args;
-		va_start(args, s);
-		vsnprintf(buffer, 256, s, args);
-		sceIoWrite(fd, buffer, strlen(buffer));
-		va_end(args);
-		sceIoClose(fd);
-	}
+    SceUID fd;
+    if((fd = sceIoOpen(YA2D_LOGFILE, PSP_O_WRONLY|PSP_O_APPEND|PSP_O_CREAT, 0777))) {
+        char buffer[256];
+        va_list args;
+        va_start(args, s);
+        vsnprintf(buffer, 256, s, args);
+        sceIoWrite(fd, buffer, strlen(buffer));
+        va_end(args);
+        sceIoClose(fd);
+    }
 }
 
 //Grabbed from: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
 unsigned int next_pow2(unsigned int v)
 {
-	v--;
-	v |= v >> 1;
-	v |= v >> 2;
-	v |= v >> 4;
-	v |= v >> 8;
-	v |= v >> 16;
-	return v+1;
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    return v+1;
 }
 
 //Grabbed from: PSPSDK Samples

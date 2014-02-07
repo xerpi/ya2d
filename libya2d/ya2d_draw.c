@@ -1,20 +1,20 @@
 /*
-	libya2d
-	Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
+    libya2d
+    Copyright (C) 2013  Sergi (xerpi) Granell (xerpi.g.12@gmail.com)
 
-	This library is free software; you can redistribute it and/or
-	modify it under the terms of the GNU Lesser General Public
-	License as published by the Free Software Foundation; either
-	version 2.1 of the License, or (at your option) any later version.
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
-	This library is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-	Lesser General Public License for more details.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
-	You should have received a copy of the GNU Lesser General Public
-	License along with this library; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <pspgu.h>
@@ -38,35 +38,35 @@
 
 void ya2d_draw_pixel(int x, int y, unsigned int color)
 {
-	sceGuDisable(GU_TEXTURE_2D);
-	ya2d_Col1UIVertex3S *vertices = sceGuGetMemory(sizeof(ya2d_Col1UIVertex3S)); 
-	vertices->color = color;
-	vertices->x = x;
-	vertices->y = y;
-	vertices->z = 0;
-	
-	sceGumDrawArray(GU_POINTS, GU_COLOR_8888|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 1, 0, vertices);
+    sceGuDisable(GU_TEXTURE_2D);
+    ya2d_Col1UIVertex3S *vertices = sceGuGetMemory(sizeof(ya2d_Col1UIVertex3S)); 
+    vertices->color = color;
+    vertices->x = x;
+    vertices->y = y;
+    vertices->z = 0;
+    
+    sceGumDrawArray(GU_POINTS, GU_COLOR_8888|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 1, 0, vertices);
 }
 
 void ya2d_draw_line(int x0, int y0, int x1, int y1, unsigned int color)
 {
-	sceGuDisable(GU_TEXTURE_2D);
-	ya2d_Col1UIVertex3S *vertices = sceGuGetMemory(2 * sizeof(ya2d_Col1UIVertex3S)); 
-	vertices[0].color = color;
-	vertices[0].x = x0;
-	vertices[0].y = y0;
-	vertices[0].z = 0;
-	
-	vertices[1].color = color;
-	vertices[1].x = x1;
-	vertices[1].y = y1;
-	vertices[1].z = 0;
-	sceGumDrawArray(GU_LINES, GU_COLOR_8888|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 2, 0, vertices);	
+    sceGuDisable(GU_TEXTURE_2D);
+    ya2d_Col1UIVertex3S *vertices = sceGuGetMemory(2 * sizeof(ya2d_Col1UIVertex3S)); 
+    vertices[0].color = color;
+    vertices[0].x = x0;
+    vertices[0].y = y0;
+    vertices[0].z = 0;
+    
+    vertices[1].color = color;
+    vertices[1].x = x1;
+    vertices[1].y = y1;
+    vertices[1].z = 0;
+    sceGumDrawArray(GU_LINES, GU_COLOR_8888|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 2, 0, vertices);    
 }
 
 void ya2d_draw_rect(int x, int y, int w, int h, unsigned int color, int filled)
 {
-	sceGuDisable(GU_TEXTURE_2D);
+    sceGuDisable(GU_TEXTURE_2D);
     
     #undef set_common_vert
     #define set_common_vert(_0,_1,_2,_3) do {  \
@@ -106,7 +106,7 @@ void ya2d_draw_rect(int x, int y, int w, int h, unsigned int color, int filled)
         vertices[4].z = 0;
             
         sceGumDrawArray(GU_LINE_STRIP, GU_COLOR_8888|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 5, 0, vertices);
-    }	
+    }    
 }
 
 void ya2d_draw_rect_rot_center(int x, int y, int w, int h, unsigned int color, int filled, float angle, int rot_center_x, int rot_center_y)
@@ -141,7 +141,7 @@ void ya2d_draw_rect_rot_center(int x, int y, int w, int h, unsigned int color, i
         ya2d_Col1UIVertex3S *vertices = sceGuGetMemory(4 * sizeof(ya2d_Col1UIVertex3S)); 
         
         set_common_vert(0,1,2,3);
-        	
+            
         for (i = 0; i < 4; ++i) {  //Rotate and translate
             int _x = vertices[i].x;
             int _y = vertices[i].y;
