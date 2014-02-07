@@ -11,10 +11,10 @@ PSPDEV=$(shell psp-config --pspdev-path)
 include $(PSPSDK)/lib/build.mak
 
 all:
-    @echo "Type 'make install' to install the library!"
+	@echo "Type 'make install' to install the library!"
 
 install: $(TARGET_LIB)
-    cp $(TARGET_LIB) $(PSPDEV)/psp/lib
-    cp ./*.h $(PSPDEV)/psp/include
-    @echo "libya2d installed!"
-    
+	cp $(TARGET_LIB) $(PSPDEV)/psp/lib
+	cp ./*.h $(PSPDEV)/psp/include
+	@echo "libya2d installed!"
+

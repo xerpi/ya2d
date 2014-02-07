@@ -20,19 +20,20 @@ include $(PSPSDK)/lib/build.mak
 
 
 copy: EBOOT.PBP
-    mkdir -p /media/$(USER)/disk/PSP/GAME/$(notdir $(CURDIR))
-    cp EBOOT.PBP /media/$(USER)/disk/PSP/GAME/$(notdir $(CURDIR))
-    sync
+	mkdir -p /media/$(USER)/disk/PSP/GAME/$(notdir $(CURDIR))
+	cp EBOOT.PBP /media/$(USER)/disk/PSP/GAME/$(notdir $(CURDIR))
+	sync
 
-%.o    : %.png
-    bin2o -i $< $@ $(addsuffix _png, $(basename $(notdir $<) ))
-    
-%.o    : %.bmp
-    bin2o -i $< $@ $(addsuffix _bmp, $(basename $(notdir $<) ))
-    
-%.o    : %.jpg
-    bin2o -i $< $@ $(addsuffix _jpg, $(basename $(notdir $<) ))
-    
-%.o    : %.jpeg
-    bin2o -i $< $@ $(addsuffix _jpeg, $(basename $(notdir $<) ))
-        
+%.o: %.png
+	bin2o -i $< $@ $(addsuffix _png, $(basename $(notdir $<) ))
+
+%.o: %.bmp
+	bin2o -i $< $@ $(addsuffix _bmp, $(basename $(notdir $<) ))
+
+%.o: %.jpg
+	bin2o -i $< $@ $(addsuffix _jpg, $(basename $(notdir $<) ))
+
+%.o: %.jpeg
+	bin2o -i $< $@ $(addsuffix _jpeg, $(basename $(notdir $<) ))
+
+  
