@@ -39,8 +39,11 @@ ya2d_Texture *ya2d_create_texture(int width, int height, int psm, int place)
 	texture->psm    = psm;
 	texture->pow2_width  = next_pow2(width);
 	texture->pow2_height = next_pow2(height);
-	texture->center_x = 0;
-	texture->center_y = 0;
+    
+	//texture->center_x = 0;
+	//texture->center_y = 0;
+    ya2d_center_texture(texture);
+    
 	texture->swizzled = GU_FALSE;
 	
 	switch(psm) {

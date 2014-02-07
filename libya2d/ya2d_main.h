@@ -32,12 +32,13 @@
 int ya2d_init();
 int ya2d_shutdown();
 
-void ya2d_start();
-void ya2d_finish();
+void ya2d_start_drawing();
+void ya2d_finish_drawing();
+void ya2d_clear_screen(unsigned int color);
 void ya2d_swapbuffers();
+void ya2d_calc_fps();
 void ya2d_set_vsync(int enabled);
 
-void ya2d_set_clear_color(unsigned int color);
 void *ya2d_get_drawbuffer();
 float ya2d_get_fps();
 

@@ -32,8 +32,7 @@ int main(int argc, char* argv[])
 	sceCtrlSetSamplingCycle(0);
 	sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
 	
-	ya2d_init();	
-	ya2d_set_clear_color(0);
+	ya2d_init();
 	
 	ya2d_Texture *t;
 	t = ya2d_load_JPEG_buffer(test3_jpg_start, test3_jpg_size, YA2D_PLACE_VRAM);
@@ -49,7 +48,8 @@ int main(int argc, char* argv[])
 	
 	while(run) {
 		sceCtrlPeekBufferPositive(&pad, 1);
-		ya2d_start();
+		ya2d_start_drawing();
+        ya2d_clear_screen(0);
 		
 		if (pad.Buttons & PSP_CTRL_RTRIGGER) angle += 0.005f;
 		else if (pad.Buttons & PSP_CTRL_LTRIGGER) angle -= 0.005f;
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
         else
             ya2d_draw_texture(cross_x, cross_y, t, centered);
             
-		ya2d_draw_rect(cross_x-t->center_x, cross_y-t->center_y, t->width, t->height, 0xFF00FF00);
+		ya2d_draw_rect(cross_x-t->center_x, cross_y-t->center_y, t->width, t->height, 0xFF00FF00, 0);
 		
 		ya2d_draw_line(cross_x-5, cross_y, cross_x+5, cross_y, 0xFF0000FF);
 		ya2d_draw_line(cross_x, cross_y-5, cross_x, cross_y+5, 0xFF0000FF);
@@ -81,8 +81,9 @@ int main(int argc, char* argv[])
         
         tinyfont_draw_rotated_string(120, 150, GU_RGBA(255,255,0,255), angle, "Rotated text!!");
 		
-		ya2d_finish();
+		ya2d_finish_drawing();
 		ya2d_swapbuffers();
+        ya2d_calc_fps();
         old_pad = pad;
 	}
 	

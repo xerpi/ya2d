@@ -31,11 +31,9 @@ static int          _ya2d_current_fb    = 0;
 static void *       _ya2d_fb[2]         = {NULL, NULL};
 static void *       _ya2d_drawfbp       = NULL;
 static void *       _ya2d_zfb           = NULL;
-static unsigned int _ya2d_clear_color   = 0;
 static int          _ya2d_inited        = 0;
 static clock_t      _ya2d_before_clock  = 0;
 static clock_t      _ya2d_after_clock   = 0;
-static clock_t      _ya2d_delta_clock   = 0;
 static clock_t      _ya2d_frame_count   = 0;
 static float        _ya2d_fps           = 0;
 static int          _ya2d_vsync_enabled = 0;
@@ -107,18 +105,22 @@ int ya2d_shutdown()
 	return 1;
 }
 
-void ya2d_start()
+void ya2d_start_drawing()
 {
 	sceGuStart(GU_DIRECT, _ya2d_gu_list);
-	sceGuClearColor(_ya2d_clear_color);
-	sceGuClearDepth(0);
-	sceGuClear(GU_COLOR_BUFFER_BIT | GU_DEPTH_BUFFER_BIT);
 }
 
-void ya2d_finish()
+void ya2d_finish_drawing()
 {
 	sceGuFinish();
 	sceGuSync(GU_SYNC_WHAT_DONE, GU_SYNC_FINISH);
+}
+
+void ya2d_clear_screen(unsigned int color)
+{
+	sceGuClearColor(color);
+	sceGuClearDepth(0);
+	sceGuClear(GU_COLOR_BUFFER_BIT | GU_DEPTH_BUFFER_BIT);
 }
 
 void ya2d_swapbuffers()
@@ -127,28 +129,25 @@ void ya2d_swapbuffers()
         sceDisplayWaitVblankStart();
     }
 	_ya2d_drawfbp = sceGuSwapBuffers();
-	_ya2d_after_clock = sceKernelLibcClock();
-	
-	
+    
+    _ya2d_current_fb ^= 1;	
+}
+
+void ya2d_calc_fps()
+{
+	_ya2d_after_clock = sceKernelLibcClock();	
 	++_ya2d_frame_count;
-	_ya2d_delta_clock = _ya2d_after_clock - _ya2d_before_clock;
-	if(_ya2d_delta_clock >= uS_PER_SEC) {
-		_ya2d_fps = (float)_ya2d_frame_count/(float)(_ya2d_delta_clock/uS_PER_SEC);
+    register clock_t delta = _ya2d_after_clock - _ya2d_before_clock;
+	if(delta >= uS_PER_SEC) {
+		_ya2d_fps = (float)_ya2d_frame_count/(float)(delta/uS_PER_SEC);
 		_ya2d_frame_count = 0;
 		_ya2d_before_clock = sceKernelLibcClock();
-	}
-	
-	_ya2d_current_fb ^= 1;	
+	}  
 }
 
 void ya2d_set_vsync(int enabled)
 {
     _ya2d_vsync_enabled = enabled;
-}
-
-void ya2d_set_clear_color(unsigned int color)
-{
-	_ya2d_clear_color = color;
 }
 
 void *ya2d_get_drawbuffer()

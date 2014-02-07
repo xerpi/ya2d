@@ -1,10 +1,12 @@
 TARGET = ya2d
-OBJS = main.o test1.o test2.o test3.o
+OBJS = main.o
+DATA_OBJS = test3.o
 
 INCDIR =
 CFLAGS = -G0 -Wall -O2
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 ASFLAGS = $(CFLAGS)
+OBJS+=$(DATA_OBJS)
 
 LIBDIR =
 LDFLAGS =
