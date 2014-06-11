@@ -158,6 +158,27 @@ void ya2d_draw_texture_hotspot(struct ya2d_texture *texture, int x, int y, int c
     }    
 }
 
+void ya2d_draw_texture_scale(struct ya2d_texture *texture, int x, int y, float scale_x, float scale_y)
+{
+    ya2d_set_texture(texture);
+
+    struct ya2d_vertex_2s3s *vertices = sceGuGetMemory(2 * sizeof(struct ya2d_vertex_2s3s));
+    
+    vertices[0].u = 0;
+    vertices[0].v = 0;
+    vertices[0].x = x;
+    vertices[0].y = y;
+    vertices[0].z = 0;
+    
+    vertices[1].u = texture->width;
+    vertices[1].v = texture->height;
+    vertices[1].x = x + (texture->width)*scale_x;
+    vertices[1].y = y + (texture->height)*scale_y;
+    vertices[1].z = 0;
+    
+    sceGumDrawArray(GU_SPRITES, GU_TEXTURE_16BIT|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 2, 0, vertices);
+}
+
 void ya2d_draw_texture_rotate(struct ya2d_texture *texture, int x, int y, float angle)
 {
     ya2d_draw_texture_rotate_hotspot(texture, x, y, angle, texture->width/2, texture->height/2);
@@ -165,13 +186,8 @@ void ya2d_draw_texture_rotate(struct ya2d_texture *texture, int x, int y, float 
 
 void ya2d_draw_texture_rotate_hotspot(struct ya2d_texture *texture, int x, int y, float angle, int center_x, int center_y)
 {
-
-    sceGuEnable(GU_TEXTURE_2D);
-    sceGuTexMode(texture->pixel_format, 0, 0, texture->swizzled);
     ya2d_set_texture(texture);
-    sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
-    sceGuTexFilter(GU_NEAREST, GU_NEAREST);    
-        
+
     struct ya2d_vertex_2s3s *vertices = sceGuGetMemory(4 * sizeof(struct ya2d_vertex_2s3s));
     
     vertices[0].u = 0;
