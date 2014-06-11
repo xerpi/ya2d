@@ -61,7 +61,7 @@ struct ya2d_texture *ya2d_create_texture(int width, int height, int pixel_format
     if ((place == YA2D_PLACE_RAM) || (texture->data_size > vlargestblock())) {
         texture->data = memalign(16, texture->data_size);
         texture->place = YA2D_PLACE_RAM;
-    } else {
+    } else if (place == YA2D_PLACE_VRAM){
         texture->data = valloc(texture->data_size);
         texture->place = YA2D_PLACE_VRAM;
     }
@@ -70,12 +70,40 @@ struct ya2d_texture *ya2d_create_texture(int width, int height, int pixel_format
     return texture;
 }
 
+struct ya2d_texture *ya2d_create_empty_texture(int width, int height, int pixel_format)
+{
+    struct ya2d_texture *texture = (struct ya2d_texture *)malloc(sizeof(struct ya2d_texture));
+
+    texture->width  = width;
+    texture->height = height;
+    texture->pow2_w = next_pow2(width);
+    texture->pow2_h = next_pow2(height);
+    texture->pixel_format = pixel_format;
+    texture->swizzled = GU_FALSE;
+    
+    switch (pixel_format) {
+    case GU_PSM_5650:
+    case GU_PSM_5551:
+    case GU_PSM_4444:
+        texture->stride = texture->pow2_w * 2;
+        break;
+    case GU_PSM_8888:
+    default:
+        texture->stride = texture->pow2_w * 4;
+        break;
+    }
+    
+    texture->place = YA2D_PLACE_UNK;
+    texture->data_size = texture->stride * texture->pow2_h;
+    return texture;
+}
+
 
 void ya2d_free_texture(struct ya2d_texture *texture)
 {
     if (texture->place == YA2D_PLACE_RAM) {
         free(texture->data);
-    } else {
+    } else if (texture->place == YA2D_PLACE_VRAM){
         vfree(texture->data);
     }
     free(texture);

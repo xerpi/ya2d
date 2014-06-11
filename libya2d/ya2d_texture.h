@@ -26,7 +26,8 @@
 
 enum ya2d_texture_place {
     YA2D_PLACE_RAM,
-    YA2D_PLACE_VRAM
+    YA2D_PLACE_VRAM,
+    YA2D_PLACE_UNK
 };
 
 struct ya2d_texture {
@@ -40,6 +41,7 @@ struct ya2d_texture {
 };
 
 struct ya2d_texture *ya2d_create_texture(int width, int height, int pixel_format, int place);
+struct ya2d_texture *ya2d_create_empty_texture(int width, int height, int pixel_format);
 void ya2d_free_texture(struct ya2d_texture *texture);
 void ya2d_set_texture(struct ya2d_texture *texture);
 
