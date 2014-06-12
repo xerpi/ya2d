@@ -155,11 +155,12 @@ struct ya2d_texture* ya2d_load_PNG_file_offset(const char* filename, int place, 
     if ((fd = sceIoOpen(filename, PSP_O_RDONLY, 0777)) < 0) {
         goto exit_error;
     }
+    
+    sceIoLseek(fd, offset, SEEK_SET);
+    
     if (sceIoRead(fd, pngsig, YA2D_PNGSIGSIZE) != YA2D_PNGSIGSIZE) {
         goto exit_close;
     }
-    
-    sceIoLseek(fd, offset, SEEK_SET);
     
     if (png_sig_cmp(pngsig, 0, YA2D_PNGSIGSIZE) != 0) {
         goto exit_close;
