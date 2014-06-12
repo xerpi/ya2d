@@ -147,8 +147,7 @@ exit_error:
 }
 
 
-
-struct ya2d_texture* ya2d_load_PNG_file(const char* filename, int place)
+struct ya2d_texture* ya2d_load_PNG_file_offset(const char* filename, int place, SceOff offset)
 {
     png_byte pngsig[YA2D_PNGSIGSIZE];
     SceUID fd;
@@ -159,6 +158,9 @@ struct ya2d_texture* ya2d_load_PNG_file(const char* filename, int place)
     if (sceIoRead(fd, pngsig, YA2D_PNGSIGSIZE) != YA2D_PNGSIGSIZE) {
         goto exit_close;
     }
+    
+    sceIoLseek(fd, offset, SEEK_SET);
+    
     if (png_sig_cmp(pngsig, 0, YA2D_PNGSIGSIZE) != 0) {
         goto exit_close;
     }
@@ -171,6 +173,12 @@ exit_close:
     sceIoClose(fd);
 exit_error:
     return NULL;
+}
+
+
+struct ya2d_texture* ya2d_load_PNG_file(const char* filename, int place)
+{
+    return ya2d_load_PNG_file_offset(filename, place, 0);
 }
 
 

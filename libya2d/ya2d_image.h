@@ -21,8 +21,10 @@
 #define _YA2D_IMAGE_H_
 
 #include "ya2d_texture.h"
+#include <pspkerneltypes.h>
 
 struct ya2d_texture* ya2d_load_PNG_file(const char* filename, int place);
+struct ya2d_texture* ya2d_load_PNG_file_offset(const char* filename, int place, SceOff offset);
 struct ya2d_texture* ya2d_load_PNG_buffer(void* buffer, int place);
 
 struct ya2d_texture* ya2d_load_BMP_file(const char* filename, int place);
