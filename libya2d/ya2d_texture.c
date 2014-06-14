@@ -34,7 +34,8 @@ static struct ya2d_texture *_last_texture = NULL;
 static struct ya2d_texture *ya2d_create_texture_common(int width, int height, int pixel_format)
 {
     struct ya2d_texture *texture = (struct ya2d_texture *)malloc(sizeof(struct ya2d_texture));
-
+    if (!texture) return NULL;
+    
     texture->width  = width;
     texture->height = height;
     texture->pow2_w = next_pow2(width);
