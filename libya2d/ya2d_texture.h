@@ -33,6 +33,7 @@ enum ya2d_texture_place {
 struct ya2d_texture {
     int place;               /** RAM or VRAM **/
     int swizzled;            /** 1: swizzled, 0: not swizzled **/
+    int has_alpha;
     int pixel_format;        /** Pixel Storage Format **/
     int width, height;       /** Texture width and height (non base 2) **/
     int pow2_w, pow2_h;      /** Texture width and height (base 2) **/

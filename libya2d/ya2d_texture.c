@@ -31,8 +31,7 @@
 
 static struct ya2d_texture *_last_texture = NULL;
 
-
-struct ya2d_texture *ya2d_create_texture(int width, int height, int pixel_format, int place)
+static struct ya2d_texture *ya2d_create_texture_common(int width, int height, int pixel_format)
 {
     struct ya2d_texture *texture = (struct ya2d_texture *)malloc(sizeof(struct ya2d_texture));
 
@@ -42,6 +41,7 @@ struct ya2d_texture *ya2d_create_texture(int width, int height, int pixel_format
     texture->pow2_h = next_pow2(height);
     texture->pixel_format = pixel_format;
     texture->swizzled = GU_FALSE;
+    texture->has_alpha = GU_TRUE;
     
     switch (pixel_format) {
     case GU_PSM_5650:
@@ -56,46 +56,37 @@ struct ya2d_texture *ya2d_create_texture(int width, int height, int pixel_format
     }
     
     texture->data_size = texture->stride * texture->pow2_h;
-    
-    //If there's not enough space in the VRAM, then allocate it in the RAM
-    if ((place == YA2D_PLACE_RAM) || (texture->data_size > vlargestblock())) {
-        texture->data = memalign(16, texture->data_size);
-        texture->place = YA2D_PLACE_RAM;
-    } else if (place == YA2D_PLACE_VRAM){
-        texture->data = valloc(texture->data_size);
-        texture->place = YA2D_PLACE_VRAM;
-    }
-    memset(texture->data, 0, texture->data_size);
-    ya2d_flush_texture(texture);
     return texture;
+}
+
+
+struct ya2d_texture *ya2d_create_texture(int width, int height, int pixel_format, int place)
+{
+    struct ya2d_texture *texture = ya2d_create_texture_common(width, height, pixel_format);
+    if (texture) {
+        //If there's not enough space in the VRAM, then allocate it in the RAM
+        if ((place == YA2D_PLACE_RAM) || (texture->data_size > vlargestblock())) {
+            texture->data = memalign(16, texture->data_size);
+            texture->place = YA2D_PLACE_RAM;
+        } else if (place == YA2D_PLACE_VRAM){
+            texture->data = valloc(texture->data_size);
+            texture->place = YA2D_PLACE_VRAM;
+        }
+        memset(texture->data, 0, texture->data_size);
+        ya2d_flush_texture(texture);
+        return texture;
+    }
+    return NULL;
 }
 
 struct ya2d_texture *ya2d_create_empty_texture(int width, int height, int pixel_format)
 {
-    struct ya2d_texture *texture = (struct ya2d_texture *)malloc(sizeof(struct ya2d_texture));
-
-    texture->width  = width;
-    texture->height = height;
-    texture->pow2_w = next_pow2(width);
-    texture->pow2_h = next_pow2(height);
-    texture->pixel_format = pixel_format;
-    texture->swizzled = GU_FALSE;
-    
-    switch (pixel_format) {
-    case GU_PSM_5650:
-    case GU_PSM_5551:
-    case GU_PSM_4444:
-        texture->stride = texture->pow2_w * 2;
-        break;
-    case GU_PSM_8888:
-    default:
-        texture->stride = texture->pow2_w * 4;
-        break;
+    struct ya2d_texture *texture = ya2d_create_texture_common(width, height, pixel_format);
+    if (texture) {
+        texture->place = YA2D_PLACE_UNK;
+        return texture;
     }
-    
-    texture->place = YA2D_PLACE_UNK;
-    texture->data_size = texture->stride * texture->pow2_h;
-    return texture;
+    return NULL;
 }
 
 
@@ -118,7 +109,7 @@ void ya2d_set_texture(struct ya2d_texture *texture)
                       texture->pow2_w, texture->data);
         _last_texture = texture;
     }
-    sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
+    sceGuTexFunc(GU_TFX_REPLACE, texture->has_alpha ? GU_TCC_RGBA : GU_TCC_RGB);
     sceGuTexFilter(GU_NEAREST, GU_NEAREST);   
 }
 
