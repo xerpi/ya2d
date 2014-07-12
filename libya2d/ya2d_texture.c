@@ -29,8 +29,6 @@
 #include <malloc.h>
 #include <vram.h>
 
-static struct ya2d_texture *_last_texture = NULL;
-
 static struct ya2d_texture *ya2d_create_texture_common(int width, int height, int pixel_format)
 {
     struct ya2d_texture *texture = (struct ya2d_texture *)malloc(sizeof(struct ya2d_texture));
@@ -104,12 +102,9 @@ void ya2d_free_texture(struct ya2d_texture *texture)
 void ya2d_set_texture(struct ya2d_texture *texture)
 {
     sceGuEnable(GU_TEXTURE_2D);
-    if (texture != _last_texture) {
-        sceGuTexMode(texture->pixel_format, 0, 0, texture->swizzled);
-        sceGuTexImage(0, texture->pow2_w, texture->pow2_h,
-                      texture->pow2_w, texture->data);
-        _last_texture = texture;
-    }
+    sceGuTexMode(texture->pixel_format, 0, 0, texture->swizzled);
+    sceGuTexImage(0, texture->pow2_w, texture->pow2_h,
+                  texture->pow2_w, texture->data);
     sceGuTexFunc(GU_TFX_REPLACE, texture->has_alpha ? GU_TCC_RGBA : GU_TCC_RGB);
     sceGuTexFilter(GU_NEAREST, GU_NEAREST);   
 }
