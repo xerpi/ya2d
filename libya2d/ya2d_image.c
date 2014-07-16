@@ -102,34 +102,32 @@ static struct ya2d_texture* _ya2d_load_PNG_generic(void* io_ptr, png_rw_ptr read
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth,
                  &color_type, NULL, NULL, NULL);
     
-    switch(color_type) {
-    case PNG_COLOR_TYPE_RGB: //PSP: 16 or 32 bpp (not 0xRRGGBB)
-        png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
-        break;
-    case PNG_COLOR_TYPE_PALETTE:
+    if (color_type == PNG_COLOR_TYPE_PALETTE && bit_depth <= 8) png_set_expand(png_ptr);
+    if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) png_set_expand(png_ptr);
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) png_set_expand(png_ptr);
+    if (bit_depth == 16) png_set_strip_16(png_ptr);
+    
+    //PSP: 16 or 32 bpp (not 0xRRGGBB)
+    if (bit_depth == 8 && color_type == PNG_COLOR_TYPE_RGB) png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+    if (color_type == PNG_COLOR_TYPE_PALETTE) {
         png_set_palette_to_rgb(png_ptr);
-        break;
-    case PNG_COLOR_TYPE_GRAY:
-        if(bit_depth < 8) {
-            png_set_expand_gray_1_2_4_to_8(png_ptr);
-            bit_depth = 8;
-        }
-        break;
+        png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
     }
+    if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) png_set_expand_gray_1_2_4_to_8(png_ptr);
     
     if(png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
         png_set_tRNS_to_alpha(png_ptr);
     }
-    if(bit_depth == 16) {
-        png_set_strip_16(png_ptr);
-    }
     
+    if(bit_depth < 8) png_set_packing(png_ptr);
+
     png_read_update_info(png_ptr, info_ptr);
     
     row_ptrs = (png_bytep*)malloc(sizeof(png_bytep) * height);
     struct ya2d_texture* texture = ya2d_create_texture(width, height,
                                                 GU_PSM_8888, place);
                                                 
+    texture->has_alpha = 1;
     int i;
     for (i = 0; i < height; ++i) {
         row_ptrs[i] = (png_bytep)(texture->data + i*texture->stride);
