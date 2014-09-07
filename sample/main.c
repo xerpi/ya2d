@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
     float cross_x = 50, cross_y = 50;
     SceCtrlData pad, old_pad; old_pad.Buttons = 0;
     int centered = 0, rotate = 0, vsync = 0;
+    unsigned char trans = 0;
     
     while(run) {
         sceCtrlPeekBufferPositive(&pad, 1);
@@ -56,6 +57,13 @@ int main(int argc, char* argv[])
         if (pad.Buttons & PSP_CTRL_CROSS & ~old_pad.Buttons) centered = !centered;
         if (pad.Buttons & PSP_CTRL_TRIANGLE & ~old_pad.Buttons) rotate = !rotate;
         if (pad.Buttons & PSP_CTRL_SQUARE & ~old_pad.Buttons) ya2d_set_vsync(vsync = !vsync);
+        
+        if (pad.Buttons & PSP_CTRL_RIGHT) {
+            if (trans < 255) trans++;
+        }
+        if (pad.Buttons & PSP_CTRL_LEFT) {
+            if (trans > 0) trans--;
+        }
     
         if (fabs(pad.Lx-128) > 60) cross_x += (pad.Lx-128)/100.0f;
         if (fabs(pad.Ly-128) > 60) cross_y += (pad.Ly-128)/100.0f;
@@ -66,7 +74,7 @@ int main(int argc, char* argv[])
             if (centered)
                 ya2d_draw_texture_centered(t, cross_x, cross_y);
             else
-                ya2d_draw_texture(t, cross_x, cross_y);
+                ya2d_draw_texture_blend(t, cross_x, cross_y, ((unsigned int)trans)<<24);
         }
 
         ya2d_draw_rect(cross_x, cross_y, t->width, t->height, 0xFF00FF00, 0);
@@ -74,7 +82,7 @@ int main(int argc, char* argv[])
         ya2d_draw_line(cross_x-5, cross_y, cross_x+5, cross_y, 0xFF0000FF);
         ya2d_draw_line(cross_x, cross_y-5, cross_x, cross_y+5, 0xFF0000FF);
 
-        tinyfont_draw_stringf(265, 10,  GU_RGBA(0,0,255,255), "FPS: %.2f  angle: %.2f", ya2d_get_fps(), angle);
+        tinyfont_draw_stringf(185, 10,  GU_RGBA(0,0,255,255), "FPS: %.2f  angle: %.2f trans: %d", ya2d_get_fps(), angle, trans);
         tinyfont_draw_stringf(265, 20,  GU_RGBA(0,0,255,255), "x: %.2f   y: %.2f", cross_x, cross_y);
         if (centered) tinyfont_draw_string(265, 30,  GU_RGBA(255,0,255,255), "centered");
         if (rotate)   tinyfont_draw_string(265, 40,  GU_RGBA(0,255,255,255), "rotate");

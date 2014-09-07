@@ -47,6 +47,7 @@ void ya2d_free_texture(struct ya2d_texture *texture);
 void ya2d_set_texture(struct ya2d_texture *texture);
 
 void ya2d_draw_texture(struct ya2d_texture *texture, int x, int y);
+void ya2d_draw_texture_blend(struct ya2d_texture *texture, int x, int y, unsigned int color);
 void ya2d_draw_texture_centered(struct ya2d_texture *texture, int x, int y);
 void ya2d_draw_texture_hotspot(struct ya2d_texture *texture, int x, int y, int center_x, int center_y);
 

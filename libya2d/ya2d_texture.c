@@ -156,6 +156,29 @@ void ya2d_draw_texture(struct ya2d_texture *texture, int x, int y)
     ya2d_draw_texture_hotspot(texture, x, y, 0, 0); 
 }
 
+void ya2d_draw_texture_blend(struct ya2d_texture *texture, int x, int y, unsigned int color)
+{
+    ya2d_set_texture(texture);
+    
+    struct ya2d_vertex_1ui2s3s *vertices = sceGuGetMemory(2 * sizeof(struct ya2d_vertex_1ui2s3s));
+    
+    vertices[0].color = color;
+    vertices[0].u = 0;
+    vertices[0].v = 0;
+    vertices[0].x = x;
+    vertices[0].y = y;
+    vertices[0].z = 0;
+    
+    vertices[1].color = color;
+    vertices[1].u = texture->width;
+    vertices[1].v = texture->height;
+    vertices[1].x = x + texture->width;
+    vertices[1].y = y + texture->height;
+    vertices[1].z = 0;
+    
+    sceGumDrawArray(GU_SPRITES, GU_COLOR_8888|GU_TEXTURE_16BIT|GU_VERTEX_16BIT|GU_TRANSFORM_2D, 2, 0, vertices);
+}
+
 void ya2d_draw_texture_centered(struct ya2d_texture *texture, int x, int y)
 {
     ya2d_draw_texture_hotspot(texture, x, y, texture->width/2, texture->height/2);

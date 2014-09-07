@@ -28,6 +28,13 @@ struct ya2d_vertex_2s3s
     short x, y, z;
 };
 
+struct ya2d_vertex_1ui2s3s
+{
+    short u, v;
+    unsigned int color;
+    short x, y, z;
+};
+
 struct ya2d_vertex_1ui3s
 {
     unsigned int color;
