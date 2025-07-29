@@ -25,9 +25,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <psputility.h>
 #include <png.h>
-#include <jpeglib.h>
 
+#ifdef USE_PSP_JPEG
+#include <pspjpeg.h>
+#else
+#include <jpeglib.h>
+#endif
 
 #define YA2D_PNGSIGSIZE   (8)
 #define YA2D_BMPSIGNATURE (0x4D42)
@@ -73,6 +78,7 @@ static void _ya2d_read_png_buffer_fn(png_structp png_ptr, png_bytep data, png_si
 
 static struct ya2d_texture* _ya2d_load_PNG_generic(void* io_ptr, png_rw_ptr read_data_fn, int place)
 {
+
     png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
                                                  NULL, NULL, NULL);
     if(png_ptr == NULL) {
@@ -336,6 +342,112 @@ exit_error:
     return NULL;    
 }
 
+
+#ifdef USE_PSP_JPEG
+
+static void get_JPEG_info(u8* data, int data_size, int* out_w, int* out_h){
+    int w = 0, h = 0;
+    const uint8_t * buf = &data[0];
+    for (int i = 2; i < data_size;) {
+        if (buf[i] == 0xFF) {
+            i++;
+            switch(buf[i]){
+                case 0xC0: case 0xC1: case 0xC2: case 0xC3: case 0xC5: case 0xC6: case 0xC7: case 0xC9: case 0xCA: case 0xCB: case 0xCD: case 0xCE: case 0xCF:
+                    i += 4;
+                    h = (buf[i] << 8) | (buf[i+1]);
+                    w = (buf[i+2] << 8) | (buf[i+3]);
+                    i = data_size; break;
+                case 0xDA: case 0xD9: break;
+                default:
+                    i += ((buf[i+1] << 8) | (buf[i+2])) + 1;
+                    break;
+            }
+        } else i++;
+    }
+    *out_w = w;
+    *out_h = h;
+}
+
+struct ya2d_texture* ya2d_load_JPEG_buffer(void* jpegbuf, unsigned long jpeg_size, int place){
+
+    struct ya2d_texture *texture = NULL;
+    void* bufRGB = NULL;
+    int w = 0, h = 0;
+    int res = -1;
+
+    int utility_loaded = sceUtilityLoadModule(PSP_MODULE_AV_MPEGBASE);
+    sceJpegInitMJpeg();
+
+    get_JPEG_info(jpegbuf, jpeg_size, &w, &h);
+    if (w <= 0 || h <= 0){
+        //printf("bad image: %dx%d\n", w, h);
+        goto ya2d_load_jpeg_error;
+    }
+
+    int w2 = next_pow2(w);
+    int h2 = next_pow2(h);
+
+    bufRGB = malloc(4*w2*h2);
+    texture = ya2d_create_texture(w, h, GU_PSM_8888, place);
+    if (!bufRGB || !texture){
+        //printf("alloc FAILED: %p, %p\n", bufRGB, texture);
+        goto ya2d_load_jpeg_error;
+    }
+
+    if ((res=sceJpegCreateMJpeg(w2, h2))<0) {
+        //printf("sceJpegCreateMJpeg FAILED: %p\n", res);
+        goto ya2d_load_jpeg_error;
+    }
+
+    if ((res=sceJpegDecodeMJpeg(jpegbuf, jpeg_size, bufRGB, 0)) < 0){
+        //printf("sceJpegCreateMJpeg FAILED: %p\n", res);
+        goto ya2d_load_jpeg_error;
+    }
+
+    unsigned char* tex_data = texture->data;
+    unsigned char* buf = bufRGB;
+    unsigned int wb = w2*4;
+    for (int i=0; i<h2; i++){
+        memcpy(tex_data, buf, wb);
+        buf += wb;
+        tex_data += texture->stride;
+    }
+    texture->has_alpha = 0;
+
+    ya2d_flush_texture(texture);
+
+    goto ya2d_load_jpeg_finish;
+
+    ya2d_load_jpeg_error:
+    ya2d_free_texture(texture); texture = NULL;
+
+    ya2d_load_jpeg_finish:
+    free(bufRGB);
+    sceJpegDeleteMJpeg();
+    sceJpegFinishMJpeg();
+    if (utility_loaded>=0) sceUtilityUnloadModule(PSP_MODULE_AV_MPEGBASE);
+
+    return texture;
+}
+
+struct ya2d_texture* ya2d_load_JPEG_file(const char* filename, int place){
+    SceUID fd = sceIoOpen(filename, PSP_O_RDONLY, 0777);
+    size_t filesize = sceIoLseek(fd, 0, PSP_SEEK_END);
+    sceIoLseek(fd, 0, PSP_SEEK_SET);
+
+    void* buf = malloc(filesize);
+    if (!buf) return NULL;
+
+    sceIoRead(fd, buf, filesize);
+    struct ya2d_texture* res = ya2d_load_JPEG_buffer(buf, filesize, place);
+
+    sceIoClose(fd);
+    free(buf);
+    return res;
+}
+
+#else
+
 static struct ya2d_texture* _ya2d_load_JPEG_generic(struct jpeg_decompress_struct* jinfo, struct jpeg_error_mgr* jerr, int place)
 {
     int row_bytes;
@@ -378,7 +490,6 @@ exit_error:
     return NULL;
 }
 
-
 struct ya2d_texture* ya2d_load_JPEG_file(const char* filename, int place)
 {
     FILE *fd;
@@ -403,7 +514,6 @@ struct ya2d_texture* ya2d_load_JPEG_file(const char* filename, int place)
     return texture;
 }
 
-
 struct ya2d_texture* ya2d_load_JPEG_buffer(void* buffer, unsigned long buffer_size, int place)
 {
     if (buffer == NULL) {
@@ -424,3 +534,5 @@ struct ya2d_texture* ya2d_load_JPEG_buffer(void* buffer, unsigned long buffer_si
     
     return texture;
 }
+
+#endif
