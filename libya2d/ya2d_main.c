@@ -48,9 +48,9 @@ int ya2d_init()
     
     sceGuStart(GU_DIRECT, _ya2d_gu_list);
     
-    _ya2d_fb[0] = valloc(BUF_WIDTH * SCR_HEIGHT * 4);
-    _ya2d_fb[1] = valloc(BUF_WIDTH * SCR_HEIGHT * 4);
-    _ya2d_zfb   = valloc(BUF_WIDTH * SCR_HEIGHT * 2);
+    _ya2d_fb[0] = vramalloc(BUF_WIDTH * SCR_HEIGHT * 4);
+    _ya2d_fb[1] = vramalloc(BUF_WIDTH * SCR_HEIGHT * 4);
+    _ya2d_zfb   = vramalloc(BUF_WIDTH * SCR_HEIGHT * 2);
     
     _ya2d_drawfbp = _ya2d_fb[0];
     
