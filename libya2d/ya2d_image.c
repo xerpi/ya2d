@@ -17,16 +17,18 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "ya2d_image.h"
-#include "ya2d_texture.h"
-#include "ya2d_utils.h"
-#include <pspiofilemgr.h>
-#include <pspgu.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <string.h>
+#include <pspiofilemgr.h>
+#include <pspgu.h>
 #include <psputility.h>
 #include <png.h>
+
+#include "ya2d_image.h"
+#include "ya2d_texture.h"
+#include "ya2d_utils.h"
 
 #ifdef USE_PSP_JPEG
 #include <pspjpeg.h>
