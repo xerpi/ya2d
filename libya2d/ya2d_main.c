@@ -27,9 +27,8 @@
 
 
 static unsigned int __attribute__((aligned(16))) _ya2d_gu_list[YA2D_GU_LIST_SIZE];
-static int          _ya2d_current_fb    = 0;
+static int          _ya2d_current_fb    = 1;
 static void *       _ya2d_fb[2]         = {NULL, NULL};
-static void *       _ya2d_drawfbp       = NULL;
 static void *       _ya2d_zfb           = NULL;
 static int          _ya2d_inited        = 0;
 static clock_t      _ya2d_before_clock  = 0;
@@ -51,8 +50,6 @@ int ya2d_init()
     _ya2d_fb[0] = vramalloc(BUF_WIDTH * SCR_HEIGHT * 4);
     _ya2d_fb[1] = vramalloc(BUF_WIDTH * SCR_HEIGHT * 4);
     _ya2d_zfb   = vramalloc(BUF_WIDTH * SCR_HEIGHT * 2);
-    
-    _ya2d_drawfbp = _ya2d_fb[0];
     
     sceGuDrawBuffer(GU_PSM_8888, vrelptr(_ya2d_fb[0]), BUF_WIDTH);
     sceGuDispBuffer(SCR_WIDTH, SCR_HEIGHT, vrelptr(_ya2d_fb[1]), BUF_WIDTH);
@@ -131,7 +128,8 @@ void ya2d_swapbuffers()
     if (_ya2d_vsync_enabled) {
         sceDisplayWaitVblankStart();
     }
-    _ya2d_drawfbp = sceGuSwapBuffers();
+    
+    sceGuSwapBuffers();
     
     _ya2d_current_fb ^= 1;    
 }
@@ -155,7 +153,7 @@ void ya2d_set_vsync(int enabled)
 
 void *ya2d_get_drawbuffer()
 {
-    return _ya2d_drawfbp;
+    return (void*)((u32)_ya2d_fb[_ya2d_current_fb] | 0x44000000);
 }
 
 float ya2d_get_fps()
