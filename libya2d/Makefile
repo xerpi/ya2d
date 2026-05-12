@@ -1,5 +1,5 @@
 TARGET_LIB = libya2d.a
-OBJS = ya2d_main.o ya2d_image.o ya2d_texture.o ya2d_draw.o ya2d_utils.o
+OBJS = ya2d_main.o ya2d_texture.o ya2d_draw.o ya2d_utils.o ya2d_bmp.o ya2d_png.o ya2d_jpeg.o
 
 CFLAGS = -G0 -Wall -O2
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
