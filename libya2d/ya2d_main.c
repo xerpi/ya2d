@@ -108,6 +108,7 @@ int ya2d_shutdown()
 void ya2d_start_drawing()
 {
     sceGuStart(GU_DIRECT, _ya2d_gu_list);
+    sceGuSendCommandi(0xD2, GU_PSM_8888);
 }
 
 void ya2d_finish_drawing()
